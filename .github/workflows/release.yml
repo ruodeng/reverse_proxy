@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: mipsle
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Build for ${{ matrix.goos }} ${{ matrix.goarch }}
+        run: |
+          export GOOS=${{ matrix.goos }}
+          export GOARCH=${{ matrix.goarch }}
+          go build -o proxy_app_${{ matrix.goos }}_${{ matrix.goarch }} main.go
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: proxy_app_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: proxy_app_${{ matrix.goos }}_${{ matrix.goarch }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: proxy_app_linux_amd64
+          path: ./dist
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: proxy_app_windows_amd64
+          path: ./dist
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: proxy_app_linux_mipsle
+          path: ./dist
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/proxy_app_linux_amd64
+            dist/proxy_app_windows_amd64
+            dist/proxy_app_linux_mipsle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
