@@ -1,0 +1,5 @@
+config proxy 'proxy'
+    option listen_ip '0.0.0.0'
+    option source_port '8086'
+    option target_ip '10.0.0.1'
+    option target_port '8086'
