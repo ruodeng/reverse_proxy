@@ -7,10 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest,ubuntu-22.04]
         include:
           - os: ubuntu-latest
             goos: linux
@@ -18,9 +17,9 @@ jobs:
           - os: windows-latest
             goos: windows
             goarch: amd64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             goos: linux
-            goarch: mipsle
+            goarch: arm64
 
     steps:
       - name: Checkout code
@@ -35,41 +34,43 @@ jobs:
         run: |
           export GOOS=${{ matrix.goos }}
           export GOARCH=${{ matrix.goarch }}
-          go build -o proxy_app_${{ matrix.goos }}_${{ matrix.goarch }} main.go
+          go build -o reverse_proxy_${{ matrix.goos }}_${{ matrix.goarch }} main.go
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: proxy_app_${{ matrix.goos }}_${{ matrix.goarch }}
-          path: proxy_app_${{ matrix.goos }}_${{ matrix.goarch }}
+          name: reverse_proxy_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: reverse_proxy_${{ matrix.goos }}_${{ matrix.goarch }}
 
   release:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download artifacts
+      - name: Download artifact for Linux AMD64
         uses: actions/download-artifact@v2
         with:
-          name: proxy_app_linux_amd64
+          name: reverse_proxy_linux_amd64
           path: ./dist
-      - name: Download artifacts
+
+      - name: Download artifact for Windows AMD64
         uses: actions/download-artifact@v2
         with:
-          name: proxy_app_windows_amd64
+          name: reverse_proxy_windows_amd64
           path: ./dist
-      - name: Download artifacts
+
+      - name: Download artifact for Linux ARM64
         uses: actions/download-artifact@v2
         with:
-          name: proxy_app_linux_mipsle
+          name: reverse_proxy_linux_arm64
           path: ./dist
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/proxy_app_linux_amd64
-            dist/proxy_app_windows_amd64
-            dist/proxy_app_linux_mipsle
+            dist/reverse_proxy_linux_amd64
+            dist/reverse_proxy_windows_amd64
+            dist/reverse_proxy_linux_arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

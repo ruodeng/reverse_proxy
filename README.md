@@ -1,3 +1,4 @@
+
 # Proxy Application
 
 This project is a Go-based proxy application that can handle both TCP and UDP traffic, including HTTPS. It reads configuration from a JSON file and sets up listeners on specified IPs and ports to forward traffic to target IPs and ports.
@@ -10,7 +11,7 @@ This project is a Go-based proxy application that can handle both TCP and UDP tr
 
 ## Configuration
 
-The configuration file `config.json` should be placed in the same directory as the application. The file should contain an array of proxy configurations. Each configuration specifies the listen IP, source port, target IP, and target port.
+The configuration file `config.json` should be placed in the same directory as the application or specified via a command-line argument. The file should contain an array of proxy configurations. Each configuration specifies the listen IP, source port, target IP, and target port.
 
 ### Example `config.json`
 
@@ -86,7 +87,7 @@ go build -o proxy_app main.go
     STOP=10
 
     start() {
-        /usr/bin/proxy_app &
+        /usr/bin/proxy_app -config /path/to/config.json &
     }
 
     stop() {
@@ -106,14 +107,15 @@ go build -o proxy_app main.go
 
 ## Running the Application
 
-To run the application, simply execute the built binary:
+To run the application, simply execute the built binary with the `-config` flag:
 
 ```sh
-./proxy_app
+./proxy_app -config /path/to/config.json
 ```
 
-The application will read the configuration from `config.json` and start listening on the specified IPs and ports.
+The application will read the configuration from the specified `config.json` file and start listening on the specified IPs and ports.
 
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
+ 
